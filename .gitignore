@@ -1,2 +1,6 @@
 dataset/
+aug_dataset/
+checkpoints/
 __pycache__/
+
+result.jpg

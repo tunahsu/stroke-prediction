@@ -8,13 +8,15 @@ import matplotlib.pyplot as plt
 from scipy import ndimage
 from tensorflow import keras
 from tqdm import tqdm
-from models.cnn import awesome_3D_network
+from models.cnn import awesome_3D_CNN, awesome_3D_UNet
+from keras.utils import np_utils
+# from volumentations import Compose
 
 
 # Config
+W = 128
+H = 128
 D = 128
-W = 256
-H = 256
 LR = 0.0001
 epochs = 50
 batch_size = 2
@@ -29,8 +31,8 @@ def read_data_file(filepath):
     return slices
 
 def normalize(volume):
-    min = -1000
-    max = 700
+    min = 0
+    max = 255
     volume[volume < min] = min
     volume[volume > max] = max
     volume = (volume - min) / (max - min)
@@ -39,19 +41,18 @@ def normalize(volume):
 
 
 def sample_data(img):
-    desired_depth = D
     desired_width = W
     desired_height = H
-    current_depth = img.shape[0]
+    desired_depth = D
     current_width = img.shape[1]
     current_height = img.shape[2]
-    depth = current_depth / desired_depth
+    current_depth = img.shape[0]
     width = current_width / desired_width
     height = current_height / desired_height
-    depth_factor = 1 / depth
+    depth = current_depth / desired_depth
     width_factor = 1 / width
     height_factor = 1 / height
-    # img = ndimage.rotate(img, 90, reshape=False)
+    depth_factor = 1 / depth
     img = ndimage.zoom(img, (depth_factor, width_factor, height_factor), order=0)
     return img
 
@@ -60,17 +61,31 @@ def process_scan(path):
     volume = read_data_file(path)
     volume = normalize(volume)
     volume = sample_data(volume)
+    volume = np.moveaxis(volume, 0, -1) # change shape order
     return volume
+
+def get_augmentation(patch_size):
+    return Compose([
+#         Rotate((0, 0), (0, 0), (15, 15), p=1),
+#         Flip(0, p=1),
+#         Flip(1, p=1),
+#         Flip(2, p=0.5),
+#         RandomRotate90((1, 2), p=1),
+        RandomGamma(gamma_limit=(60, 120), p=1),
+    ], p=1.0)
 
 
 normal_scan_paths = [
-    os.path.join(os.getcwd(), "dataset/LOW", x)
-    for x in os.listdir("dataset/LOW")
+    os.path.join(os.getcwd(), "aug_dataset/LOW", x)
+    for x in os.listdir("aug_dataset/LOW")
 ]
 abnormal_scan_paths = [
-    os.path.join(os.getcwd(), "dataset/HIGH", x)
-    for x in os.listdir("dataset/HIGH")
+    os.path.join(os.getcwd(), "aug_dataset/HIGH", x)
+    for x in os.listdir("aug_dataset/HIGH")
 ]
+
+random.shuffle(normal_scan_paths)
+random.shuffle(abnormal_scan_paths)
 
 print("mri scans with normal heart: " + str(len(normal_scan_paths)))
 print("mri scans with abnormal heart: " + str(len(abnormal_scan_paths)))
@@ -79,55 +94,43 @@ print("mri scans with abnormal heart: " + str(len(abnormal_scan_paths)))
 '''
 Build train and validation datasets
 Downsample the scans to have
-shape of 128x256x256.
+shape of 256x256x128.
 split the dataset into train and validation subsets.
 '''
 
 normal_scans = np.array([process_scan(path) for path in tqdm(normal_scan_paths)])
 abnormal_scans = np.array([process_scan(path) for path in tqdm(abnormal_scan_paths)])
 
+
 # assign 1 for stroke's, for the normal ones assign 0.
 normal_labels = np.array([0 for _ in range(len(normal_scans))])
 abnormal_labels = np.array([1 for _ in range(len(abnormal_scans))])
 
 # Split data in the ratio 70-30 for training and validation.
-x_train = np.concatenate((abnormal_scans[:7], normal_scans[:7]), axis=0)
-y_train = np.concatenate((abnormal_labels[:7], normal_labels[:7]), axis=0)
-x_val = np.concatenate((abnormal_scans[7:], normal_scans[7:]), axis=0)
-y_val = np.concatenate((abnormal_labels[7:], normal_labels[7:]), axis=0)
+a = int(len(abnormal_scans) * 0.7)
+b = int(len(normal_scans) * 0.7)
+x_train = np.concatenate((abnormal_scans[:a], normal_scans[:b]), axis=0)
+y_train = np.concatenate((abnormal_labels[:a], normal_labels[:b]), axis=0)
+x_val = np.concatenate((abnormal_scans[a:], normal_scans[b:]), axis=0)
+y_val = np.concatenate((abnormal_labels[a:], normal_labels[b:]), axis=0)
+
+y_train = np_utils.to_categorical(y_train)
+y_val = np_utils.to_categorical(y_val)
 
 print(
     "Number of samples in train and validation are %d and %d."
     % (x_train.shape[0], x_val.shape[0])
 )
 
-'''
- Data augmentation
-'''
-
-@tf.function
-def rotate(volume):
-    def scipy_rotate(volume):
-        angles = [-20, -10, -5, 5, 10, 20]
-        # pick angles at random
-        angle = random.choice(angles)
-        volume = ndimage.rotate(volume, angle, reshape=False)
-        volume[volume < 0] = 0
-        volume[volume > 1] = 1
-        return volume
-
-    augmented_volume = tf.numpy_function(scipy_rotate, [volume], tf.float32)
-    return augmented_volume
-
 
 def train_preprocessing(volume, label):
     # volume = rotate(volume)
-    volume = tf.expand_dims(volume, axis=3)
+    volume = tf.expand_dims(volume, axis=-1)
     return volume, label
 
 
 def validation_preprocessing(volume, label):
-    volume = tf.expand_dims(volume, axis=3)
+    volume = tf.expand_dims(volume, axis=-1)
     return volume, label
 
 # Define data loaders.
@@ -148,7 +151,7 @@ validation_dataset = (
 )
 
 # Build model.
-model = awesome_3D_network(depth=D, width=W, height=H)
+model = awesome_3D_CNN(width=W, height=H, depth=D)
 model.summary()
 
 '''
@@ -193,15 +196,17 @@ for i, metric in enumerate(["acc", "loss"]):
     ax[i].set_xlabel("epochs")
     ax[i].set_ylabel(metric)
     ax[i].legend(["train", "val"])
+fig.savefig('result.jpg')
 
 '''
  Make predictions on a single mri scan
 '''
 model.load_weights("./checkpoints/3dcnn.h5")
-prediction = model.predict(np.expand_dims(normal_scans[0], axis=0))[0]
+prediction = model.predict(np.expand_dims(normal_scans[0], axis=0))
+print(prediction)
 
-class_names = ["normal", "abnormal"]
-if prediction[0] > 0.5:
-    print("abnormal confidence = ", prediction[0]*100)
-else:
-    print("normal confidence = ", prediction[0]*100)
+# class_names = ["normal", "abnormal"]
+# if prediction[0] > 0.5:
+#     print("abnormal, confidence = ", prediction[0]*100)
+# else:
+#     print("normal, confidence = ", prediction[0]*100)
