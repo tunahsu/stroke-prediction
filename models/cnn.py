@@ -1,12 +1,12 @@
 from tensorflow import keras
 from keras import layers
 
-def awesome_3D_CNN(width, height, depth):
+def awesome_3D_CNN(depth, width, height):
     '''
     Building a 3D convolutional neural network model.
     Using relu activation function for Convolution layer, pool size 2 for pooling layer and sigmoid for densing layer
     '''
-    inputs = keras.Input((width, height, depth, 1))
+    inputs = keras.Input((depth, width, height, 1))
 
     x = layers.Conv3D(filters=64, kernel_size=3, activation="relu")(inputs)
     x = layers.MaxPool3D(pool_size=2)(x)

@@ -14,17 +14,18 @@ from keras.utils import np_utils
 
 
 # Config
+D = 64
 W = 128
 H = 128
-D = 128
+
 LR = 0.0001
-epochs = 50
+epochs = 40
 batch_size = 2
 
 
 def read_data_file(filepath):
     slices = []
-    for scan in os.listdir(filepath):
+    for scan in sorted(os.listdir(filepath)):
         slice = np.asarray(PIL.Image.open(os.path.join(filepath, scan)))
         slices.append(slice)
     slices = np.array(slices)
@@ -41,19 +42,19 @@ def normalize(volume):
 
 
 def sample_data(img):
+    desired_depth = D
     desired_width = W
     desired_height = H
-    desired_depth = D
+    current_depth = img.shape[0]
     current_width = img.shape[1]
     current_height = img.shape[2]
-    current_depth = img.shape[0]
+    depth = current_depth / desired_depth
     width = current_width / desired_width
     height = current_height / desired_height
-    depth = current_depth / desired_depth
+    depth_factor = 1 / depth
     width_factor = 1 / width
     height_factor = 1 / height
-    depth_factor = 1 / depth
-    img = ndimage.zoom(img, (depth_factor, width_factor, height_factor), order=0)
+    img = ndimage.zoom(img, (depth_factor, width_factor, height_factor), order=1)
     return img
 
 
@@ -61,7 +62,7 @@ def process_scan(path):
     volume = read_data_file(path)
     volume = normalize(volume)
     volume = sample_data(volume)
-    volume = np.moveaxis(volume, 0, -1) # change shape order
+    # volume = np.moveaxis(volume, 0, -1) # change shape order
     return volume
 
 def get_augmentation(patch_size):
@@ -76,12 +77,12 @@ def get_augmentation(patch_size):
 
 
 normal_scan_paths = [
-    os.path.join(os.getcwd(), "aug_dataset/LOW", x)
-    for x in os.listdir("aug_dataset/LOW")
+    os.path.join(os.getcwd(), "aug_dataset_v2/LOW", x)
+    for x in os.listdir("aug_dataset_v2/LOW")
 ]
 abnormal_scan_paths = [
-    os.path.join(os.getcwd(), "aug_dataset/HIGH", x)
-    for x in os.listdir("aug_dataset/HIGH")
+    os.path.join(os.getcwd(), "aug_dataset_v2/HIGH", x)
+    for x in os.listdir("aug_dataset_v2/HIGH")
 ]
 
 random.shuffle(normal_scan_paths)
@@ -90,11 +91,10 @@ random.shuffle(abnormal_scan_paths)
 print("mri scans with normal heart: " + str(len(normal_scan_paths)))
 print("mri scans with abnormal heart: " + str(len(abnormal_scan_paths)))
 
-
 '''
 Build train and validation datasets
 Downsample the scans to have
-shape of 256x256x128.
+shape of 128x128x128.
 split the dataset into train and validation subsets.
 '''
 
@@ -107,8 +107,8 @@ normal_labels = np.array([0 for _ in range(len(normal_scans))])
 abnormal_labels = np.array([1 for _ in range(len(abnormal_scans))])
 
 # Split data in the ratio 70-30 for training and validation.
-a = int(len(abnormal_scans) * 0.7)
-b = int(len(normal_scans) * 0.7)
+a = int(len(abnormal_scans) * 0.65)
+b = int(len(normal_scans) * 0.65)
 x_train = np.concatenate((abnormal_scans[:a], normal_scans[:b]), axis=0)
 y_train = np.concatenate((abnormal_labels[:a], normal_labels[:b]), axis=0)
 x_val = np.concatenate((abnormal_scans[a:], normal_scans[b:]), axis=0)
@@ -151,7 +151,7 @@ validation_dataset = (
 )
 
 # Build model.
-model = awesome_3D_CNN(width=W, height=H, depth=D)
+model = awesome_3D_CNN(depth=D, width=W, height=H)
 model.summary()
 
 '''
@@ -169,7 +169,7 @@ model.compile(
 
 # Define callbacks.
 checkpoint_cb = keras.callbacks.ModelCheckpoint(
-    "./checkpoints/3dcnn.h5", save_best_only=True
+    "./checkpoints/3dcnn_d64.h5", save_best_only=True
 )
 early_stopping_cb = keras.callbacks.EarlyStopping(monitor="val_acc", patience=15)
 
