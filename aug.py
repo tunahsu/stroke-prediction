@@ -33,9 +33,9 @@ def get_augmentation(patch_size, value):
 def process_scan(path):
     volume = read_data_file(path).astype(np.uint8)
 
-    values = [90, 95, 105, 110]
+    values = [90, 95, 100, 105]
     for i in range(len(values)):
-        new_path = path.replace('Dataset_V2', 'aug_dataset_v2') + '_{}'.format(i + 1)
+        new_path = path.replace('ROI_Dataset', 'aug_roi_dataset') + '_{}'.format(i + 1)
         os.makedirs(new_path)
 
         aug = get_augmentation((volume.shape[0], volume.shape[1], volume.shape[2]), values[i])
@@ -59,12 +59,12 @@ def process_scan(path):
 
 
 normal_scan_paths = [
-    os.path.join(os.getcwd(), "Dataset_V2/LOW", x)
-    for x in os.listdir("Dataset_V2/LOW")
+    os.path.join(os.getcwd(), "ROI_Dataset/LOW", x)
+    for x in os.listdir("ROI_Dataset/LOW")
 ]
 abnormal_scan_paths = [
-    os.path.join(os.getcwd(), "Dataset_V2/HIGH", x)
-    for x in os.listdir("Dataset_V2/HIGH")
+    os.path.join(os.getcwd(), "ROI_Dataset/HIGH", x)
+    for x in os.listdir("ROI_Dataset/HIGH")
 ]
 
 normal_scans = np.array([process_scan(path) for path in tqdm(normal_scan_paths)])

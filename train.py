@@ -19,14 +19,14 @@ W = 128
 H = 128
 
 LR = 0.0001
-epochs = 40
+epochs = 30
 batch_size = 2
 
 
 def read_data_file(filepath):
     slices = []
     for scan in sorted(os.listdir(filepath)):
-        slice = np.asarray(PIL.Image.open(os.path.join(filepath, scan)))
+        slice = np.asarray(PIL.Image.open(os.path.join(filepath, scan)).convert('L'))
         slices.append(slice)
     slices = np.array(slices)
     return slices
@@ -77,12 +77,12 @@ def get_augmentation(patch_size):
 
 
 normal_scan_paths = [
-    os.path.join(os.getcwd(), "aug_dataset_v2/LOW", x)
-    for x in os.listdir("aug_dataset_v2/LOW")
+    os.path.join(os.getcwd(), "dataset/LOW", x)
+    for x in os.listdir("dataset/LOW")
 ]
 abnormal_scan_paths = [
-    os.path.join(os.getcwd(), "aug_dataset_v2/HIGH", x)
-    for x in os.listdir("aug_dataset_v2/HIGH")
+    os.path.join(os.getcwd(), "dataset/HIGH", x)
+    for x in os.listdir("dataset/HIGH")
 ]
 
 random.shuffle(normal_scan_paths)

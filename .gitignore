@@ -1,6 +1,4 @@
 dataset/
-aug_dataset/
-aug_dataset_v2/
 checkpoints/
 __pycache__/
 
