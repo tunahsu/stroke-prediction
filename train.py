@@ -2,15 +2,16 @@ import numpy as np
 import os
 import random
 import PIL
+import cv2
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
 from scipy import ndimage
 from tensorflow import keras
 from tqdm import tqdm
-from models.cnn import awesome_3D_CNN, awesome_3D_UNet
 from keras.utils import np_utils
-# from volumentations import Compose
+from networks.cnn import awesome_3D_CNN, awesome_3D_UNet
+from detect import det
 
 
 # Config
@@ -25,11 +26,28 @@ batch_size = 2
 
 def read_data_file(filepath):
     slices = []
+    xy_set = []
+
     for scan in sorted(os.listdir(filepath)):
-        slice = np.asarray(PIL.Image.open(os.path.join(filepath, scan)).convert('L'))
+        img_path = os.path.join(filepath, scan)
+
+        # Get xy of detection result
+        xy = det(img_path, size=512)
+        if(xy): xy_set.append(xy)
+
+        slice = np.asarray(PIL.Image.open(img_path).convert('L'))
         slices.append(slice)
+
+    # Cut all images with same bbox
+    x1 = min([x[0] for x in xy_set])
+    y1 = min([x[1] for x in xy_set])
+    x2 = max([x[2] for x in xy_set])
+    y2 = max([x[3] for x in xy_set]) 
+    slices = [x[y1:y2, x1:x2] for x in slices]
+
     slices = np.array(slices)
     return slices
+
 
 def normalize(volume):
     min = 0
@@ -62,18 +80,7 @@ def process_scan(path):
     volume = read_data_file(path)
     volume = normalize(volume)
     volume = sample_data(volume)
-    # volume = np.moveaxis(volume, 0, -1) # change shape order
     return volume
-
-def get_augmentation(patch_size):
-    return Compose([
-#         Rotate((0, 0), (0, 0), (15, 15), p=1),
-#         Flip(0, p=1),
-#         Flip(1, p=1),
-#         Flip(2, p=0.5),
-#         RandomRotate90((1, 2), p=1),
-        RandomGamma(gamma_limit=(60, 120), p=1),
-    ], p=1.0)
 
 
 normal_scan_paths = [
@@ -102,7 +109,7 @@ normal_scans = np.array([process_scan(path) for path in tqdm(normal_scan_paths)]
 abnormal_scans = np.array([process_scan(path) for path in tqdm(abnormal_scan_paths)])
 
 
-# assign 1 for stroke's, for the normal ones assign 0.
+# Assign 1 for stroke's, for the normal ones assign 0.
 normal_labels = np.array([0 for _ in range(len(normal_scans))])
 abnormal_labels = np.array([1 for _ in range(len(abnormal_scans))])
 
@@ -124,7 +131,6 @@ print(
 
 
 def train_preprocessing(volume, label):
-    # volume = rotate(volume)
     volume = tf.expand_dims(volume, axis=-1)
     return volume, label
 
@@ -201,7 +207,7 @@ fig.savefig('result.jpg')
 '''
  Make predictions on a single mri scan
 '''
-model.load_weights("./checkpoints/3dcnn.h5")
+model.load_weights("./checkpoints/3dcnn_d64.h5")
 prediction = model.predict(np.expand_dims(normal_scans[0], axis=0))
 print(prediction)
 
