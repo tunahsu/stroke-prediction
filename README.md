@@ -39,10 +39,10 @@ python predict.py
 
 ## 評估
 
-|            | Data | Accuracy | Loss |
-| ---------- | ---- | -------- | -----|
-| Train      | ??   | ??       | ??   |
-| Validation | ??   | ??       | ??   |
+|            | Accuracy | Loss   |
+| ---------- | -------- | ------ |
+| Train      | 0.9309   | 0.1982 |
+| Val        | 0.9701   | 0.1049 |
 
 ## 模型訓練
 
@@ -73,6 +73,8 @@ dataset/
 
 * 取所有切片中 bounding box 的最左上、最右下座標，作為裁切影像的依據，保證可以框住整顆 3D 心臟
 
+* 此過程將會於 volume data 輸入 3D-CNN 之前的預處理中執行 
+
 <p float="left">
   <img src="doc/yolov5_1.jpg" width="400" />
 </p>
@@ -80,7 +82,17 @@ dataset/
   <img src="doc/yolov5_2.jpg" width="400" />
 </p>
 
+
 ### Uniformizing Techniques
+
+* 參考 [Uniformizing Techniques to Process CT scans with 3D CNNs for Tuberculosis Prediction](https://arxiv.org/abs/2007.13224) 中提到的 Spline Interpolated Zoom (SIZ)
+
+* 為滿足一致的 input data size，對整個 3D 影像做縮放，沿著 Z 軸尋找附近的像素做插值
+
+<p float="left">
+  <img src="doc/SIZ_1.jpg" width="600" />
+</p>
+
 
 ### 3D-CNN Model
 
