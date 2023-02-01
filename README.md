@@ -6,7 +6,8 @@
 * 基於 3D-CNN 的 CT 影像分類模型
 * 使用 YOLOv5 偵測 CT 影像中心臟的區域
 * 在訓練、測試前透過 uniformizing techniques 統一輸入影像的大小
-* Guided-GradCAM 視覺化模型在 CT 影像中關注區域
+* 3D-Grad-CAM
+ 視覺化模型在 CT 影像中關注區域
 
 
 ## 套件
@@ -75,11 +76,8 @@ dataset/
 
 * 此過程將會於 volume data 輸入 3D-CNN 之前的預處理中執行 
 
-<p float="left">
-  <img src="doc/yolov5_1.jpg" width="400" />
-</p>
-<p float="left">
-  <img src="doc/yolov5_2.jpg" width="400" />
+* <p float="left">
+  <img src="doc/YOLOv5_1.jpg" width="500" />
 </p>
 
 
@@ -89,27 +87,31 @@ dataset/
 
 * 為滿足一致的 input data size，對整個 3D 影像做縮放，沿著 Z 軸尋找附近的像素做插值
 
-<p float="left">
+* <p float="left">
   <img src="doc/SIZ_1.jpg" width="600" />
 </p>
 
 
 ### 3D-CNN Model
 
-### Guided-GradCAM
+* 使用 Keras 提供的 Conv3D layer 來設計深度學習網路
+* 設計 4 層的 3D-CNN 網路，最後由 softmax 輸出 HIGH/LOW 的機率
+* 由於訓練資料集較小，採用較不複雜的設計避免 overfitting 
 
-## 遭遇問題及困難
-
-* ...
-* ...
-* ...
+* <p float="left">
+  <img src="doc/CNN_1.jpg" width="600" />
+</p>
 
 
+### 3D-Grad-CAM
 
-## 預計增加功能
 
-* [ ] ...
-* [ ] ..
-* [ ] ...
-* [ ] ...
+* 3D-Grad-CAM 視覺化 3D-CNN 在心臟斷層掃描中關注的區域
+* 將 volume 切成多個 slices 製作成 GIF動畫
+
+* <p float="left">
+  <img src="doc/heatmap_1.gif" width="300" />
+  <img src="doc/heatmap_2.gif" width="300" />
+</p>
+
   

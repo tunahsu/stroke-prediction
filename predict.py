@@ -10,6 +10,7 @@ import cv2
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+import matplotlib.animation as animation
 
 from networks.cnn import awesome_3D_CNN
 from scipy import ndimage
@@ -24,7 +25,7 @@ D = 64
 W = 128
 H = 128
 
-SCAN_PATH = 'dataset/HIGH/1182214(O)_3'
+SCAN_PATH = 'dataset/HIGH/4286357(O)_3'
 WEIGHT_PATH = 'checkpoints/3dcnn_d64.h5'
 CLASS_INDEX = 1
 # layer name to visualize
@@ -150,6 +151,7 @@ col = 4
 
 f, axarr = plt.subplots(row, col, figsize=(col * 4, row * 4));
 f.suptitle('Grad-CAM')
+ims = []
 
 for i in range(row):
     for j in range(col):  
@@ -167,9 +169,19 @@ for i in range(row):
 
         axial_overlay = cv2.addWeighted(axial_ct_img, 0.2, axial_grad_cmap_img, 0.8, 0, dtype=cv2.CV_32F)
 
-        img_plot = axarr[i, j].imshow(axial_overlay, cmap='jet');
+        img_plot = axarr[i, j].imshow(axial_overlay, cmap='jet')
         axarr[i, j].axis('off')
         # axarr[i, j].set_title('Overlay')
+        ims.append(axial_overlay)
 
 plt.savefig('heatmap.jpg')
-plt.show()
+
+
+# plot dynamic images
+def update(i):
+    ax.imshow(ims[i], cmap='jet')
+    ax.set_axis_off()
+
+fig, ax = plt.subplots()
+ani = animation.FuncAnimation(fig, update, frames=D, interval=200)
+ani.save('heatmap.gif', writer='pillow', fps=15)
