@@ -8,6 +8,7 @@ import os
 import argparse
 import PIL
 import cv2
+import torch
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -18,7 +19,6 @@ from scipy import ndimage
 from tensorflow.keras.optimizers import Adam
 from skimage.transform import resize
 from matplotlib import pyplot as plt
-from detect import det
 
 # Set args
 ap = argparse.ArgumentParser()
@@ -41,16 +41,31 @@ CLASS_INDEX = 1
 LAYER_NAME = 'conv3d_2'
 
 
-# load model
+# Load 3D-CNN model
 Model_3D = awesome_3D_CNN(D, W, H)
 Model_3D.load_weights(WEIGHT_PATH)
 print('Loading The Model...')
 # Model_3D.summary()
 
+# Locad custom YOLOv5 model
+model = torch.hub.load('ultralytics/yolov5', 'custom', path=args['yoloweight'])
+# Set IoU confidence
+model.iou = 0.1
+# Set confidence confidence
+model.conf = 0.1
+
 
 # Create a graph that outputs target convolution and output
 grad_model = tf.keras.models.Model([Model_3D.inputs], [Model_3D.get_layer(LAYER_NAME).output, Model_3D.output])
 grad_model.summary()
+
+
+def det(img, size):
+    # Inference
+    results = model(img, size=size)
+    # result
+    crops = results.crop(save=False)
+    return [int(x.item()) for x in crops[0]['box']] if len(crops) > 0 else False
 
 
 def read_data_file(filepath):
@@ -61,7 +76,7 @@ def read_data_file(filepath):
         img_path = os.path.join(filepath, scan)
 
         # Get xy of detection result
-        xy = det(img_path, size=512, weight=args['yoloweight'])
+        xy = det(img_path, size=512)
         if(xy): xy_set.append(xy)
 
         slice = np.asarray(PIL.Image.open(img_path).convert('L'))
@@ -76,6 +91,7 @@ def read_data_file(filepath):
 
     slices = np.array(slices)
     return slices
+
 
 def normalize(volume):
     min = 0

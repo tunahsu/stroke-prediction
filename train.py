@@ -3,6 +3,7 @@ import os
 import random
 import PIL
 import cv2
+import torch
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
@@ -11,7 +12,6 @@ from tensorflow import keras
 from tqdm import tqdm
 from keras.utils import np_utils
 from networks.cnn import awesome_3D_CNN, awesome_3D_UNet
-from detect import det
 
 
 # Config
@@ -22,6 +22,21 @@ H = 128
 LR = 0.0001
 epochs = 30
 batch_size = 2
+
+# Locad custom YOLOv5 model
+model = torch.hub.load('ultralytics/yolov5', 'custom', path='checkpoints/yolov5_512_500.pt')
+# Set IoU confidence
+model.iou = 0.1
+# Set confidence confidence
+model.conf = 0.1
+
+
+def det(img, size):
+    # Inference
+    results = model(img, size=size)
+    # result
+    crops = results.crop(save=False)
+    return [int(x.item()) for x in crops[0]['box']] if len(crops) > 0 else False
 
 
 def read_data_file(filepath):
