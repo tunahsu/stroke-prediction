@@ -1,0 +1,125 @@
+<div class="site-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-6">
+        <div class="section-title">
+          <h2>選擇檔案</h2>
+        </div>
+        <div class="post-entry-2 d-flex col" style="margin-bottom:1em ">
+          <div class="thumbnail">
+            <img src="{{ url_for('static', filename='images/upload.png') }}" alt="Example" width="30%" height="30%"
+              style="display: block; margin: auto;margin-top: 20%; width: 18%; height: 30%;">
+
+          </div>
+          <div class="contents">
+            <p class="mb-3">選擇這部電腦上的檔案進行分析</p>
+            <div class="col">
+              <div class="row" style="margin-bottom:1em;">
+                <div class="col-3 text-center"
+                  style="background: rgb(248, 248, 248); font-weight: 500; color:rgb(60, 60, 60); letter-spacing: 2px;">
+                  檔案</div>
+                <div id="file-name" class="col-9"
+                  style="color: gray ; border: 0.5px 0.5px 0.5px 0 rgb(248,248,248) solid;">尚未選擇</div>
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+        <div class="col">
+          <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <div class="row justify-content-md-center">
+              <div class="col-4">
+
+                <label class="btn btn-jelly normal-btn">
+                  {{ form.ct(multiple="multiple") }}
+                  <span>選擇圖片</span>
+                </label>
+
+              </div>
+              <div class="col-4">
+                {{ form.submit }}
+              </div>
+
+            </div>
+
+          </form>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="section-title">
+          <h2>瀏覽結果</h2>
+        </div>
+        <div class="post-entry-2 d-flex">
+          <div class="thumbnail">
+            <img src="{{ url_for('static', filename='images/search.png') }}" alt="Example" width="30%" height="30%"
+              style="display: block; margin: auto;margin-top: 20%; width: 18%; height: 30%;">
+
+          </div>
+          <div class="contents">
+            <p class="mb-3">觀看分析完成的成果</p>
+            <h2><a class="btn btn-jelly normal-btn" href="{{ filesURL }}" style="color: white;">點此瀏覽結果</a></h2>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include '_modal.html' %}
+
+{% block javascript %}
+<script>
+  $('#ct').parent().click(function () {
+    $('#ct').change(function () {
+      $('#view-result').fadeOut();
+      $('.md-auto').removeClass('flow-bg-active').addClass('flow-bg').find('p').removeClass('flow-text-active').addClass('flow-text')
+      $('.step-two').removeClass('spinner-border spinner-border-sm').text('❷');
+
+      $('.md-auto').eq(0).removeClass('flow-bg').addClass('flow-bg-active')
+        .find('p').removeClass('flow-text').addClass('flow-text-active')
+
+      // filename = $(this).val().replace(/.*(\/|\\)/, '')
+      filename = $(this)[0].files.length + ' 個檔案'
+      if (filename != '') {
+        $('#file-name').text(filename)
+      }
+      else {
+        $('#file-name').text('尚未選擇')
+      }
+    })
+  })
+
+  $('form').submit(function (e) {
+    e.preventDefault()
+    data = new FormData($('form')[0])
+    $.ajax({
+      type: 'POST',
+      url: '{{ postURL }}',
+      data: data,
+      contentType: false,
+      cache: false,
+      processData: false,
+      beforeSend: function () {
+        $('.md-auto').removeClass('flow-bg-active').addClass('flow-bg')
+          .find('p').removeClass('flow-text-active').addClass('flow-text')
+        $('.md-auto').eq(1).removeClass('flow-bg').addClass('flow-bg-active').find('p').removeClass('flow-text').addClass('flow-text-active')
+        $('.step-two').text('').addClass('spinner-border spinner-border-sm');
+      },
+      success: function (msg) {
+        $('.md-auto').removeClass('flow-bg-active').addClass('flow-bg')
+          .find('p').removeClass('flow-text-active').addClass('flow-text')
+        $('.step-two').removeClass('spinner-border spinner-border-sm').text('❷');
+
+        $('#view-result').fadeIn();
+        $('.md-auto').eq(2).removeClass('flow-bg').addClass('flow-bg-active')
+          .find('p').removeClass('flow-text').addClass('flow-text-active')
+
+        $('.modal img').attr({ 'src': msg })
+      }
+    })
+  })
+</script>
+{% endblock %}

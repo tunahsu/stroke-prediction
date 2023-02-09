@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="py-0">
+  <div class="container">
+    <div class="half-post-entry d-block d-lg-flex bg-light">
+      <div class="contents col">
+        <span class="caption">Stroke Prediction</span>
+        <h2 style="color:rgb(20, 20, 20)">中風預測</h2>
+        <p class="mb-3">根據胸腔中心臟斷層掃描的影像，判斷病人中風的機率</p>
+      </div>
+    </div>
+    {% include '_step.html' %}
+  </div>
+</div>
+{% include '_site-section.html' %}
+{% endblock %}

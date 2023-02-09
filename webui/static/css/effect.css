@@ -1,0 +1,257 @@
+
+.borderCenter {
+    position: relative;
+    padding: 5px 15px;
+}
+
+.borderCenter::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -3px;
+    width: 60%;
+    height: 2px;
+    opacity: 0;
+    background-color: #FF7C83;
+    transform: translate(-50%, 0);
+    transition: all 0.3s ease-in-out;
+}
+
+.borderCenter:hover::after {
+    width: 100%;
+    opacity: 1;
+}
+
+.btn-jelly {
+    z-index: 1;
+  position: relative;
+  font-size: inherit;
+  font-family: inherit;
+  color: white;
+  padding: 0.5em 1em;
+  outline: none;
+  border: none;
+  background-color: rgb(255, 124, 131);
+  overflow: hidden;
+  transition: color 0.4s ease-in-out;
+  border-radius: 0;
+  font-weight: 500;
+  text-shadow: rgba(255,255,255,.4) 0 0 1.2px;
+  }
+  
+.btn-jelly::before {
+    content: '';
+    z-index: -1;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1em;
+    height: 1em;
+    border-radius: 50%;
+    background-color: #FF516B;
+    transform-origin: center;
+    transform: translate3d(-50%, -50%, 0) scale3d(0, 0, 0);
+    transition: transform 0.45s ease-in-out;
+  }
+  
+  .btn-jelly:hover {
+    cursor: pointer;
+    color: white;
+  }
+  
+  .btn-jelly:hover::before {
+    transform: translate3d(-50%, -50%, 0) scale3d(15, 15, 15);
+  }
+
+  div.flow-play {
+    z-index: 1;
+    font-size: inherit;
+    font-family: inherit;
+    color: white;
+    /* padding: 0.5em 1em; */
+    outline: none;
+    border: none;
+    background-color: rgb(80, 80, 80);
+    
+  }
+  
+  div.flow-play:hover {
+    cursor: pointer;
+    animation: jelly 0.5s;
+  }
+  
+  @keyframes jelly {
+    0%,
+    100% {
+      transform: scale(1, 1);
+    }
+    25% {
+      transform: scale(0.9, 1.1);
+    }
+    50% {
+      transform: scale(1.1, 0.9);
+    }
+    75% {
+      transform: scale(0.95, 1.05);
+    }
+  }
+/*style only*/
+p.flow-text{
+    color: rgb(60, 60, 60);
+    font-size: 16px;
+    font-weight: 500;
+    margin: 10px auto;
+    letter-spacing: 2px;
+    text-shadow: rgba(0,0,0,.4) 0 0 1.2px;
+}
+div.flow-bg{
+    background-color: rgb(240,240,240);
+    border: 2px white solid;
+}
+div.flow-bg-active{
+    background-color: #FF7C83;
+    border: 2px white solid;
+}
+p.flow-text-active{
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 10px auto 10px 1px;
+    letter-spacing: 2px;
+    text-shadow: rgba(255,255,255,.4) 0 0 1.2px;
+}
+p.flow-step{
+    font-size: 12px;
+    color:white;
+    margin: 10px 1px 10px auto;
+    padding-right: 1px;
+}
+.step-bg{
+    margin: 0;
+}
+h2{
+    color: rgb(60, 60, 60);
+    letter-spacing: 2px;
+    text-shadow: rgba(60,60,60,.4) 0 0 2px;
+}
+.content-bg{
+    background-color: white;
+    
+}
+.normal-btn{
+    font-size: 13px;
+}
+a, input{
+    box-shadow: 0px;
+}
+.loading{
+    background: rgb(80, 80, 80);
+    letter-spacing: 2px;
+}
+.loading:hover{
+    background: rgb(100, 100, 100);;
+}
+.flow-bg, .flow-bg-active{
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+span.spinner-load{
+    margin-left: 0.5em;
+}
+#file-name{
+    overflow: hidden;
+}
+#view-result{
+    display: none;
+}
+th{
+    font-weight: 500;
+    text-shadow: rgba(60,60,60,.4) 0 0 2px;
+    text-align: center;
+    letter-spacing: 2px;
+    color: rgb(80, 80, 80);
+}
+p.file-type{
+    font-weight: 400;
+    text-shadow: rgba(255,255,255,.4) 0 0 2px;
+    /* text-align: center; */
+    color:rgb(60, 60, 60);
+    border: 1px solid rgb(230, 230, 230);
+    border-radius: 3px;
+    text-transform:uppercase;
+    font-size: 14px;
+
+}
+td{
+    font-weight: 400;
+    text-shadow: rgba(255,255,255,.4) 0 0 2px;
+    /* text-align: center; */
+    color:rgb(60, 60, 60);
+    font-size: 15px;
+    letter-spacing: 1px;
+}
+p.index-number{
+    font-weight: 400;
+    color:rgb(60, 60, 60);
+    /* color: rgb(255, 124, 131); */
+    /* font-size: 15px; */
+}
+p.table-name{
+    margin-bottom: 0px;
+}
+button.play-btn {
+    position: relative;
+    background: white;
+    border: none;
+    color: rgb(255, 124, 131);
+    font-weight: 500;
+    letter-spacing: 2px;
+  }
+  
+  button.play-btn::before, button.play-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: rgb(255, 124, 131);
+    transform: scaleY(0);
+    transition: transform 0.5s ease;
+  }
+  
+  button.play-btn::before {
+    left: -8px;
+    transform-origin: center top;
+  }
+  
+  button.play-btn:hover::before {
+    transform-origin: center bottom;
+    transform: scaleY(1);
+  }
+  
+  button.play-btn::after {
+    right: -8px;
+    transform-origin: center bottom;
+  }
+  
+  button.play-btn:hover::after {
+    transform-origin: center top;
+    transform: scaleY(1);
+  }
+
+.in-video {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  opacity: 0.8;
+}
+
+#stream {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+}

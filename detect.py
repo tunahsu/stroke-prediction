@@ -1,13 +1,13 @@
 import torch
 
-# Locad custom YOLOv5 model
-model = torch.hub.load('ultralytics/yolov5', 'custom', path='checkpoints/yolov5_512_500.pt')
-# Set IoU confidence
-model.iou = 0.1
-# Set confidence confidence
-model.conf = 0.1
+def det(img, size, weight):
+    # Locad custom YOLOv5 model
+    model = torch.hub.load('ultralytics/yolov5', 'custom', path=weight)
+    # Set IoU confidence
+    model.iou = 0.1
+    # Set confidence confidence
+    model.conf = 0.1
 
-def det(img, size):
     # Inference
     results = model(img, size=size)
     # result

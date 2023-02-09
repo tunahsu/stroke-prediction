@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="site-section" style="padding-top: 1em;">
+  <div class="container">
+    <div class="col">
+      <table class="table ">
+        <thead style="background: rgb(248,248,248);">
+          <tr>
+            <th scope="col">編號</th>
+            <th scope="col">影片名稱</th>
+            <th scope="col">影片類型</th>
+            <th scope="col">建立時間</th>
+            <th scope="col">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for file in files %}
+          <tr>
+              <th scope="row"><p class="table-name index-number">{{ loop.index }}</p></th>
+              <td><p class="table-name">{{ file[0] }}</p></td>
+              <td><div class="row justify-content-center"><div class="col col-7"><p class="table-name file-type text-center">{{ file[1][1:].upper() }}</p></div></div></td>
+              <td><p class="table-name text-center">{{ file[2] }}</p></td>
+              <!-- <td><div class="col text-center"><button type="submit" class="btn btn-jelly normal-btn md-auto" data-toggle="modal" data-target=".bd-example-modal-lg" onclick="showVideo('{{ fileset.url(file[0]+file[1]) }}')">▶</button></div></td> -->
+              <td><div class="col text-center"><button type="submit" class="play-btn md-auto" data-toggle="modal" data-target=".bd-example-modal-lg" onclick="showVideo('{{ fileset.url(file[0]+file[1]) }}')">播放</button></div></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% include '_modal.html' %}
+{% endblock %}
+
+{% block javascript %}
+<script>
+  function showVideo(src) {
+    $('source').attr({'src': src})
+    $("video")[0].load();
+  }
+</script>
+{% endblock %}

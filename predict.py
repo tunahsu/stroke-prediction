@@ -5,6 +5,7 @@
 
 
 import os
+import argparse
 import PIL
 import cv2
 import numpy as np
@@ -19,14 +20,22 @@ from skimage.transform import resize
 from matplotlib import pyplot as plt
 from detect import det
 
+# Set args
+ap = argparse.ArgumentParser()
+ap.add_argument('-yw', '--yoloweight', required=False, default='checkpoints/yolov5_512_500.pt', help='path to yolo weight')
+ap.add_argument('-cw', '--cnnweight', required=False, default='checkpoints/3dcnn_d64.h5', help='path to cnn weight')
+ap.add_argument('-i', '--input', required=True, help='path to input folder')
+ap.add_argument('-o', '--output', required=False, default='heatmap.gif', help='result path to input file')
+args = vars(ap.parse_args())
+
 
 # Config
 D = 64
 W = 128
 H = 128
 
-SCAN_PATH = 'dataset/HIGH/4286357(O)_3'
-WEIGHT_PATH = 'checkpoints/3dcnn_d64.h5'
+SCAN_PATH = args['input']
+WEIGHT_PATH = args['cnnweight']
 CLASS_INDEX = 1
 # layer name to visualize
 LAYER_NAME = 'conv3d_2'
@@ -52,7 +61,7 @@ def read_data_file(filepath):
         img_path = os.path.join(filepath, scan)
 
         # Get xy of detection result
-        xy = det(img_path, size=512)
+        xy = det(img_path, size=512, weight=args['yoloweight'])
         if(xy): xy_set.append(xy)
 
         slice = np.asarray(PIL.Image.open(img_path).convert('L'))
@@ -174,7 +183,7 @@ for i in range(row):
         # axarr[i, j].set_title('Overlay')
         ims.append(axial_overlay)
 
-plt.savefig('heatmap.jpg')
+# plt.savefig('heatmap.jpg')
 
 
 # plot dynamic images
@@ -184,4 +193,4 @@ def update(i):
 
 fig, ax = plt.subplots()
 ani = animation.FuncAnimation(fig, update, frames=D, interval=200)
-ani.save('heatmap.gif', writer='pillow', fps=15)
+ani.save(args['output'], writer='pillow', fps=15)

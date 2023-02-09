@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="py-0">
+  <div class="container">
+    <div class="half-post-entry d-block d-lg-flex bg-light">
+      <div class="contents col">
+        <span class="caption">{{ error[0] }}</span>
+        <h2 style="color:rgb(20, 20, 20)">{{ error[1] }}</h2>
+        <p class="mb-3"><a href="{{ url_for('webui.index') }}">Go Back</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
