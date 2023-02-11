@@ -8,21 +8,18 @@
         <thead style="background: rgb(248,248,248);">
           <tr>
             <th scope="col">編號</th>
-            <th scope="col">影片名稱</th>
-            <th scope="col">影片類型</th>
+            <th scope="col">病歷號</th>
             <th scope="col">建立時間</th>
             <th scope="col">操作</th>
           </tr>
         </thead>
         <tbody>
-          {% for file in files %}
-          <tr>
+          {% for folder in folders %}
+            <tr>
               <th scope="row"><p class="table-name index-number">{{ loop.index }}</p></th>
-              <td><p class="table-name">{{ file[0] }}</p></td>
-              <td><div class="row justify-content-center"><div class="col col-7"><p class="table-name file-type text-center">{{ file[1][1:].upper() }}</p></div></div></td>
-              <td><p class="table-name text-center">{{ file[2] }}</p></td>
-              <!-- <td><div class="col text-center"><button type="submit" class="btn btn-jelly normal-btn md-auto" data-toggle="modal" data-target=".bd-example-modal-lg" onclick="showVideo('{{ fileset.url(file[0]+file[1]) }}')">▶</button></div></td> -->
-              <td><div class="col text-center"><button type="submit" class="play-btn md-auto" data-toggle="modal" data-target=".bd-example-modal-lg" onclick="showVideo('{{ fileset.url(file[0]+file[1]) }}')">播放</button></div></td>
+              <td><p class="table-name text-center">{{ cases[loop.index - 1] }}</p></td>
+              <td><p class="table-name text-center">{{ folder }}</p></td>
+              <td><div class="col text-center"><button type="submit" class="play-btn md-auto" data-toggle="modal" data-target=".bd-example-modal-lg" onclick="showResult('{{ prs[loop.index-1] }}', '{{ urls[loop.index-1] }}')">播放</button></div></td>
             </tr>
           {% endfor %}
         </tbody>
@@ -35,9 +32,9 @@
 
 {% block javascript %}
 <script>
-  function showVideo(src) {
-    $('source').attr({'src': src})
-    $("video")[0].load();
+  function showResult(pr, src) {
+    $('.modal h2').text('預測結果: ' + pr)
+    $('.modal img').attr({ 'src': src })
   }
 </script>
 {% endblock %}

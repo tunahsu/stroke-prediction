@@ -42,9 +42,8 @@ def index():
         y_weight = getAbsPath('../checkpoints/yolov5_512_500.pt')
         c_weight = getAbsPath('../checkpoints/3dcnn_d64.h5')
 
-        p = Popen('python ../predict.py -i {} -o {} -yw {} -cw {}'.format(source, dest, y_weight, c_weight), shell=True)
+        p = Popen('python ../predict.py -i {} -o {} -yw {} -cw {} -c {}'.format(source, dest, y_weight, c_weight, request.form.get('case')), shell=True)
         p.wait()
-
 
         return url_for('static', filename='cts/{}/heatmap.gif'.format(current_datetime))
     return render_template('index.html', form=form, postURL=url_for('webui.index'), filesURL=url_for('webui.files'))
@@ -59,6 +58,19 @@ def about():
 @webui_bp.route('/files', methods=('GET', 'POST'))
 def files():
     path = current_app.config['UPLOADED_CTS_DEST']
-    files = getFiles(path)
-    return render_template('files.html', fileset=CTs, files=files)
+    path = getAbsPath(path)
+    folders = os.listdir(path)
+
+    urls = [url_for('static', filename='cts/{}/heatmap.gif'.format(folder)) for folder in folders]
+    cases = []
+    prs = []
+
+    for folder in folders:
+        txt_path = os.path.join(path, folder, 'result.txt')
+        with open(txt_path, 'r') as f:
+            lines = f.readlines()
+            cases.append(lines[0].strip())
+            prs.append(lines[1].strip())
+    
+    return render_template('files.html', folders=folders, urls=urls, cases=cases, prs=prs)
 

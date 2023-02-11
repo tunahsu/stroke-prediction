@@ -31,19 +31,18 @@
             {{ form.hidden_tag() }}
             <div class="row justify-content-md-center">
               <div class="col-4">
-
+                {{ form.case }}
+              </div>
+              <div class="col-4">
                 <label class="btn btn-jelly normal-btn">
                   {{ form.ct(multiple="multiple") }}
                   <span>選擇圖片</span>
                 </label>
-
               </div>
               <div class="col-4">
                 {{ form.submit }}
               </div>
-
             </div>
-
           </form>
         </div>
       </div>
@@ -59,7 +58,7 @@
           </div>
           <div class="contents">
             <p class="mb-3">觀看分析完成的成果</p>
-            <h2><a class="btn btn-jelly normal-btn" href="{{ filesURL }}" style="color: white;">點此瀏覽結果</a></h2>
+            <h2><a class="btn btn-jelly normal-btn" href="{{ filesURL }}" style="color: white;">點此瀏覽</a></h2>
 
           </div>
         </div>
@@ -81,8 +80,8 @@
       $('.md-auto').eq(0).removeClass('flow-bg').addClass('flow-bg-active')
         .find('p').removeClass('flow-text').addClass('flow-text-active')
 
-      // filename = $(this).val().replace(/.*(\/|\\)/, '')
       filename = $(this)[0].files.length + ' 個檔案'
+
       if (filename != '') {
         $('#file-name').text(filename)
       }
@@ -113,7 +112,7 @@
           .find('p').removeClass('flow-text-active').addClass('flow-text')
         $('.step-two').removeClass('spinner-border spinner-border-sm').text('❷');
 
-        $('#view-result').fadeIn();
+        // $('#view-result').fadeIn();
         $('.md-auto').eq(2).removeClass('flow-bg').addClass('flow-bg-active')
           .find('p').removeClass('flow-text').addClass('flow-text-active')
 

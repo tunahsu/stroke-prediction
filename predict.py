@@ -25,7 +25,8 @@ ap = argparse.ArgumentParser()
 ap.add_argument('-yw', '--yoloweight', required=False, default='checkpoints/yolov5_512_500.pt', help='path to yolo weight')
 ap.add_argument('-cw', '--cnnweight', required=False, default='checkpoints/3dcnn_d64.h5', help='path to cnn weight')
 ap.add_argument('-i', '--input', required=True, help='path to input folder')
-ap.add_argument('-o', '--output', required=False, default='heatmap.gif', help='result path to input file')
+ap.add_argument('-o', '--output', required=False, default='heatmap.gif', help='path to result(gif)')
+ap.add_argument('-c', '--case', required=False, default='123', help='case number')
 args = vars(ap.parse_args())
 
 
@@ -209,4 +210,12 @@ def update(i):
 
 fig, ax = plt.subplots()
 ani = animation.FuncAnimation(fig, update, frames=D, interval=200)
+
+# Write result
 ani.save(args['output'], writer='pillow', fps=15)
+
+if(args['case']):
+    txt_path = args['output'].replace('heatmap.gif', 'result.txt')
+    with open(txt_path, 'a') as f:
+        f.write('{}\n'.format(args['case']))
+        f.write('{:.2f}%\n'.format(predictions.numpy()[0][1] * 100))
