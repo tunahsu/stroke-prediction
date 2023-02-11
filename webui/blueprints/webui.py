@@ -59,7 +59,7 @@ def about():
 def files():
     path = current_app.config['UPLOADED_CTS_DEST']
     path = getAbsPath(path)
-    folders = os.listdir(path)
+    folders = sorted(os.listdir(path))
 
     urls = [url_for('static', filename='cts/{}/heatmap.gif'.format(folder)) for folder in folders]
     cases = []
