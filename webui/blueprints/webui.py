@@ -31,7 +31,7 @@ def index():
     form = CTForm()
 
     if request.method == 'POST':
-        current_datetime = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        current_datetime = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
         for filename in request.files.getlist('ct'):
             cts.save(filename, folder=current_datetime)
@@ -60,6 +60,7 @@ def files():
     path = current_app.config['UPLOADED_CTS_DEST']
     path = getAbsPath(path)
     folders = sorted(os.listdir(path))
+    folders.reverse()
 
     urls = [url_for('static', filename='cts/{}/heatmap.gif'.format(folder)) for folder in folders]
     cases = []

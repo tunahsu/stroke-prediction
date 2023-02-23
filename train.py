@@ -20,7 +20,7 @@ W = 128
 H = 128
 
 LR = 0.0001
-epochs = 30
+epochs = 40
 batch_size = 2
 
 # Locad custom YOLOv5 model
@@ -114,10 +114,10 @@ print("mri scans with normal heart: " + str(len(normal_scan_paths)))
 print("mri scans with abnormal heart: " + str(len(abnormal_scan_paths)))
 
 '''
-Build train and validation datasets
+Build train and test datasets
 Downsample the scans to have
 shape of 128x128x128.
-split the dataset into train and validation subsets.
+split the dataset into train and test subsets.
 '''
 
 normal_scans = np.array([process_scan(path) for path in tqdm(normal_scan_paths)])
@@ -128,20 +128,20 @@ abnormal_scans = np.array([process_scan(path) for path in tqdm(abnormal_scan_pat
 normal_labels = np.array([0 for _ in range(len(normal_scans))])
 abnormal_labels = np.array([1 for _ in range(len(abnormal_scans))])
 
-# Split data in the ratio 70-30 for training and validation.
+# Split data in the ratio 70-30 for training and testing.
 a = int(len(abnormal_scans) * 0.65)
 b = int(len(normal_scans) * 0.65)
 x_train = np.concatenate((abnormal_scans[:a], normal_scans[:b]), axis=0)
 y_train = np.concatenate((abnormal_labels[:a], normal_labels[:b]), axis=0)
-x_val = np.concatenate((abnormal_scans[a:], normal_scans[b:]), axis=0)
-y_val = np.concatenate((abnormal_labels[a:], normal_labels[b:]), axis=0)
+x_test = np.concatenate((abnormal_scans[a:], normal_scans[b:]), axis=0)
+y_test = np.concatenate((abnormal_labels[a:], normal_labels[b:]), axis=0)
 
 y_train = np_utils.to_categorical(y_train)
-y_val = np_utils.to_categorical(y_val)
+y_test = np_utils.to_categorical(y_test)
 
 print(
-    "Number of samples in train and validation are %d and %d."
-    % (x_train.shape[0], x_val.shape[0])
+    "Number of samples in train and test are %d and %d."
+    % (x_train.shape[0], x_test.shape[0])
 )
 
 
@@ -150,13 +150,13 @@ def train_preprocessing(volume, label):
     return volume, label
 
 
-def validation_preprocessing(volume, label):
+def test_preprocessing(volume, label):
     volume = tf.expand_dims(volume, axis=-1)
     return volume, label
 
 # Define data loaders.
 train_loader = tf.data.Dataset.from_tensor_slices((x_train, y_train))
-validation_loader = tf.data.Dataset.from_tensor_slices((x_val, y_val))
+test_loader = tf.data.Dataset.from_tensor_slices((x_test, y_test))
 
 train_dataset = (
     train_loader.shuffle(len(x_train))
@@ -164,9 +164,9 @@ train_dataset = (
     .batch(batch_size)
     .prefetch(2)
 )
-validation_dataset = (
-    validation_loader.shuffle(len(x_val))
-    .map(validation_preprocessing)
+test_dataset = (
+    test_loader.shuffle(len(x_test))
+    .map(test_preprocessing)
     .batch(batch_size)
     .prefetch(2)
 )
@@ -190,14 +190,14 @@ model.compile(
 
 # Define callbacks.
 checkpoint_cb = keras.callbacks.ModelCheckpoint(
-    "./checkpoints/3dcnn_d64.h5", save_best_only=True
+    "./checkpoints/3dcnn_d64_40.h5", save_best_only=True
 )
 early_stopping_cb = keras.callbacks.EarlyStopping(monitor="val_acc", patience=15)
 
 # Train the model, doing validation at the end of each epoch
 model.fit(
     train_dataset,
-    validation_data=validation_dataset,
+    validation_data=test_dataset,
     epochs=epochs,
     shuffle=True,
     verbose=2,
@@ -217,17 +217,21 @@ for i, metric in enumerate(["acc", "loss"]):
     ax[i].set_xlabel("epochs")
     ax[i].set_ylabel(metric)
     ax[i].legend(["train", "val"])
-fig.savefig('result.jpg')
+fig.savefig('result_40.jpg')
 
-'''
- Make predictions on a single mri scan
-'''
-model.load_weights("./checkpoints/3dcnn_d64.h5")
-prediction = model.predict(np.expand_dims(normal_scans[0], axis=0))
-print(prediction)
 
-# class_names = ["normal", "abnormal"]
-# if prediction[0] > 0.5:
-#     print("abnormal, confidence = ", prediction[0]*100)
-# else:
-#     print("normal, confidence = ", prediction[0]*100)
+
+# Inference on test set
+model.load_weights("./checkpoints/3dcnn_d64_40.h5")
+y_pred = []
+
+for img in x_test:
+    img = np.expand_dims(img, axis=0)  # rank 4 tensor for prediction
+    y = model.predict(img)
+    y_pred.append(y[:][0])
+
+y_pred = np.array(y_pred)
+print(y_pred.shape)
+
+from sklearn.metrics import roc_auc_score
+print('Area under ROC curve : ', roc_auc_score(y_test, y_pred) *100 )

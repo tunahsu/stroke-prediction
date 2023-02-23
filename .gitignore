@@ -3,7 +3,3 @@ checkpoints/
 __pycache__/
 yolov5/
 webui/static/cts/
-
-result.jpg
-heatmap.jpg
-heatmap.gif
