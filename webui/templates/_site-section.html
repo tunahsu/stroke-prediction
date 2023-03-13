@@ -30,16 +30,21 @@
           <form method="POST" enctype="multipart/form-data">
             {{ form.hidden_tag() }}
             <div class="row justify-content-md-center">
-              <div class="col-4">
+              <div class="col-3">
                 {{ form.case }}
               </div>
-              <div class="col-4">
+              <div class="col-3">
                 <label class="btn btn-jelly normal-btn">
                   {{ form.ct(multiple="multiple") }}
                   <span>選擇圖片</span>
                 </label>
               </div>
-              <div class="col-4">
+              <div class="col-3">
+                <label class="btn btn-jelly normal-btn" id="select-range" data-toggle="modal" data-target=".bd-example-modal-lg">
+                  <span>範圍</span>
+                </label>
+              </div>
+              <div class="col-3">
                 {{ form.submit }}
               </div>
             </div>
@@ -89,6 +94,62 @@
         $('#file-name').text('尚未選擇')
       }
     })
+  })
+
+  input = document.getElementById('ct')
+
+  // 範圍
+  $('#select-range').click(function () {
+    $('.embed-responsive').empty()
+    obj = '<br><div class="row justify-content-md-center"><div class="col"><img src="" class="rounded mx-auto d-block start" alt=""></div><div class="col"><img src="" class="rounded mx-auto d-block end" alt=""></div></div>' 
+    $('.embed-responsive').append(obj)
+    $('.embed-responsive img').attr({'style': 'width:300px; height:300px'})
+    
+
+    reader1 = new FileReader()
+    reader1.onload = function(e) {
+      $('.start').attr('src', e.target.result);
+    }
+    reader1.readAsDataURL(input.files[0])
+
+    reader2 = new FileReader()
+    reader2.onload = function(e) {
+      $('.end').attr('src', e.target.result);
+    }
+    reader2.readAsDataURL(input.files[input.files.length - 1])
+
+    obj = $('<br><div id="slider" style="width: 90%; margin-left: auto; margin-right: auto;"></div><br>')
+
+    start = 1
+    end = input.files.length
+
+    slider = obj.slider({
+      range: true,
+      min: 1,
+      max: input.files.length,
+      values: [1, input.files.length],
+      slide: function(event, ui) {
+        file1 = input.files[ui.values[0]]
+        file2 = input.files[ui.values[1]]
+        reader1.readAsDataURL(file1)
+        reader2.readAsDataURL(file2)
+        start = ui.values[0]
+        end = ui.values[1]
+      }
+    })
+
+    btn = document.getElementById('save-range');
+    btn.addEventListener('click', function(e){
+      dt = new DataTransfer()
+      for(i = start -1; i < end; i++) {
+        dt.items.add(input.files[i])
+      }
+      input.files = dt.files
+      filename = input.files.length + ' 個檔案'
+      $('#file-name').text(filename)
+    });
+
+    $('.embed-responsive').append(slider)
   })
 
   $('form').submit(function (e) {
