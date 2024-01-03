@@ -26,7 +26,7 @@ def awesome_3D_CNN(depth, width, height):
 
     x = layers.GlobalAveragePooling3D()(x)
     x = layers.Dense(units=512, activation="relu")(x)
-    x = layers.Dropout(0.3)(x)
+    x = layers.Dropout(0.5)(x)
 
     outputs = layers.Dense(units=2, activation="softmax")(x)
 

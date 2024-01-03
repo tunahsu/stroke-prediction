@@ -3,6 +3,13 @@
 {% block content %}
 <div class="site-section" style="padding-top: 1em;">
   <div class="container">
+    <div class="half-post-entry d-block d-lg-flex bg-light">
+      <div class="contents col">
+        <span class="caption">Results</span>
+        <h2 style="color:rgb(20, 20, 20)">瀏覽預測結果</h2>
+        <p class="mb-3">此結果僅供醫療人員參考使用</p>
+      </div>
+    </div>
     <div class="col">
       <table class="table ">
         <thead style="background: rgb(248,248,248);">
@@ -33,7 +40,7 @@
 {% block javascript %}
 <script>
   function showResult(pr, src) {
-    $('.modal h2').text('預測結果: ' + pr)
+    $('.modal h2').text('預測結果大約為: ' + pr)
     $('.modal img').attr({ 'src': src })
   }
 </script>
